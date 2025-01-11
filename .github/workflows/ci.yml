@@ -7,27 +7,26 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - id: auth
+        uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GOOGLE_CREDENTIALS }}
-          export_default_credentials: true
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-      - name: Configure Docker to use gcloud as a credential helper
-        run: gcloud auth configure-docker
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v1'
 
-      - name: Build Docker image
+      - name: Configure Docker
         run: |
-          docker build \
-            -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/vault-service:latest \
-            .
+          gcloud auth configure-docker gcr.io --quiet
 
-      - name: Push Docker image
+      - name: Build and push
         run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/vault-service:latest .
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/vault-service:latest
