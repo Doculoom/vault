@@ -3,8 +3,16 @@ name = "vault"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.6",
+    "google-cloud-firestore>=2.19.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.10.5",
+    "pydantic-settings>=2.7.1",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.2",
+    "sentence-transformers>=3.3.1",
+    "setuptools>=75.8.0",
     "uvicorn>=0.34.0",
 ]
