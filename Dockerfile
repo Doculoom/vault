@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -9,6 +9,9 @@ COPY pyproject.toml .
 RUN uv pip install --no-cache --system -r pyproject.toml
 
 COPY . .
+
+ENV PYTHONPATH=/app
+RUN uv run python -m app.utils.build_utils
 
 EXPOSE 8080
 
