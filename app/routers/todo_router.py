@@ -1,9 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from typing import List
 from datetime import datetime
 
 from app.services.firestore_service import FirestoreService
-from app.models.todo_model import TodoCreate, TodoItem
+from app.models.todo_model import TodoCreate, TodoUpdate, TodoItem
 
 router = APIRouter()
 firestore_service = FirestoreService()
@@ -23,9 +23,9 @@ def create_todo(todo_data: TodoCreate):
     return TodoItem(
         id=todo_id,
         user_id=user_id,
-        description=doc_data["description"],
+        description=todo_data.description,
         due_date=todo_data.due_date,
-        created=datetime.fromisoformat(doc_data["created"])
+        created_at=datetime.fromisoformat(doc_data["created"])
     )
 
 
@@ -42,3 +42,32 @@ def list_todos(user_id: str):
             created=datetime.fromisoformat(doc["created"])
         ))
     return results
+
+
+@router.put("/todos/{todo_id}", response_model=TodoItem)
+def update_todo(todo_id: str, update_data: TodoUpdate, user_id: str):
+    existing = firestore_service.get_todo(user_id, todo_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Todo not found or access denied")
+
+    updated_description = update_data.description if update_data.description is not None else existing["description"]
+    updated_due_date = update_data.due_date if update_data.due_date is not None else existing.get("due_date")
+
+    updated_data = {
+        "description": updated_description,
+        "due_date": updated_due_date.isoformat() if updated_due_date else None,
+        "updated": datetime.utcnow().isoformat()
+    }
+
+    try:
+        firestore_service.update_todo(user_id, todo_id, updated_data)
+    except Exception as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+    return TodoItem(
+        id=todo_id,
+        user_id=user_id,
+        description=updated_description,
+        due_date=updated_due_date,
+        created=datetime.fromisoformat(existing["created"])
+    )
