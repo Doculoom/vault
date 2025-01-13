@@ -21,7 +21,7 @@ class MemoryUpdate(MemoryBase):
 class SecondaryMemory(MemoryBase):
     id: str
     created: datetime = Field(default_factory=datetime.utcnow)
-    updated: datetime = Field(default_factory=datetime.utcnow)
+    updated: Optional[datetime] = None
 
     class Config:
         orm_mode = True

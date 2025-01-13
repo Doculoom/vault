@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 
@@ -76,4 +78,38 @@ def update_memory(memory_id: str, update_data: MemoryUpdate, user_id: str):
         model_id=updated_data["model_id"],
         created=datetime.fromisoformat(updated_data["created"]),
         updated=datetime.fromisoformat(updated_data["updated"])
+    )
+
+
+@router.get("/memories", response_model=List[SecondaryMemory])
+def list_memories(user_id: str):
+    memories = firestore_service.list_memories(user_id)
+    results = []
+    for mem in memories:
+        results.append(SecondaryMemory(
+            id=mem.get("id"),
+            user_id=mem.get("user_id"),
+            text=mem.get("text"),
+            embedding=mem.get("embedding"),
+            model_id=mem.get("model_id"),
+            created=datetime.fromisoformat(mem["created"]) if mem.get("created") else None,
+            updated=datetime.fromisoformat(mem["updated"]) if mem.get("updated") else None
+        ))
+    return results
+
+
+@router.get("/memories/{memory_id}", response_model=SecondaryMemory)
+def get_memory(memory_id: str, user_id: str):
+    memory = firestore_service.get_memory(user_id, memory_id)
+    if not memory:
+        raise HTTPException(status_code=404, detail="Memory not found or access denied")
+
+    return SecondaryMemory(
+        id=memory.get("id"),
+        user_id=memory.get("user_id"),
+        text=memory.get("text"),
+        embedding=memory.get("embedding"),
+        model_id=memory.get("model_id"),
+        created=datetime.fromisoformat(memory["created"]) if memory.get("created") else None,
+        updated=datetime.fromisoformat(memory["updated"]) if memory.get("updated") else None
     )

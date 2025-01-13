@@ -35,6 +35,11 @@ class FirestoreService:
                 return data
         return {}
 
+    def list_memories(self, user_id: str) -> list:
+        query = self.memory_collection.where("user_id", "==", user_id)
+        docs = query.stream()
+        return [doc.to_dict() for doc in docs]
+
     def create_todo(self, user_id: str, data: Dict[str, Any]) -> str:
         new_id = str(uuid.uuid4())
         data["id"] = new_id
@@ -47,3 +52,19 @@ class FirestoreService:
         query = self.todo_collection.where("user_id", "==", user_id)
         docs = query.stream()
         return [doc.to_dict() for doc in docs]
+
+    def get_todo(self, user_id: str, todo_id: str) -> dict:
+        doc = self.todo_collection.document(todo_id).get()
+        if doc.exists:
+            data = doc.to_dict()
+            if data.get("user_id") == user_id:
+                return data
+        return {}
+
+    def update_todo(self, user_id: str, todo_id: str, data: dict) -> None:
+        doc_ref = self.todo_collection.document(todo_id)
+        existing = doc_ref.get().to_dict()
+        if existing and existing.get("user_id") == user_id:
+            doc_ref.update(data)
+        else:
+            raise Exception("Todo not found or access denied")
