@@ -120,7 +120,6 @@ def get_memory(memory_id: str, user_id: str):
 @router.post("/memories/search", response_model=List[MemorySearchResult])
 def search_memories(request: MemorySearchRequest):
     user_id = request.user_id
-    print(request.text, request.model_id)
     embedding = embeddings_service.generate_embedding(
         text=request.text,
         model_id=request.model_id or settings.EMBEDDING_MODEL_ID
