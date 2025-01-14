@@ -2,10 +2,12 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
+from google.cloud.firestore_v1.vector import Vector
 
+from app.core.config import settings
 from app.services.firestore_service import FirestoreService
 from app.services.embeddings_service import EmbeddingsService
-from app.models.memory_model import MemoryCreate, MemoryUpdate, SecondaryMemory
+from app.models.memory_model import MemoryCreate, MemoryUpdate, SecondaryMemory, MemorySearchResult, MemorySearchRequest
 
 router = APIRouter()
 firestore_service = FirestoreService()
@@ -19,14 +21,14 @@ def create_memory(memory_data: MemoryCreate):
     if memory_data.embedding is None:
         generated_embedding = embeddings_service.generate_embedding(
             text=memory_data.text,
-            model_id=memory_data.model_id
+            model_id=memory_data.model_id or settings.EMBEDDING_MODEL_ID
         )
         memory_data.embedding = generated_embedding
 
     doc_data = {
         "text": memory_data.text,
-        "embedding": memory_data.embedding,
-        "model_id": memory_data.model_id,
+        "embedding": Vector(memory_data.embedding),
+        "model_id": memory_data.model_id or settings.EMBEDDING_MODEL_ID,
         "created": datetime.utcnow().isoformat()
     }
 
@@ -113,3 +115,22 @@ def get_memory(memory_id: str, user_id: str):
         created=datetime.fromisoformat(memory["created"]) if memory.get("created") else None,
         updated=datetime.fromisoformat(memory["updated"]) if memory.get("updated") else None
     )
+
+
+@router.post("/memories/search", response_model=List[MemorySearchResult])
+def search_memories(request: MemorySearchRequest):
+    user_id = request.user_id
+    print(request.text, request.model_id)
+    embedding = embeddings_service.generate_embedding(
+        text=request.text,
+        model_id=request.model_id or settings.EMBEDDING_MODEL_ID
+    )
+
+    search_results = firestore_service.search_memories(
+        user_id=user_id,
+        query_embedding=embedding,
+        limit=request.limit
+    )
+
+    return search_results
+

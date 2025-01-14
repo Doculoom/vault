@@ -24,4 +24,19 @@ class SecondaryMemory(MemoryBase):
     updated: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class MemorySearchRequest(BaseModel):
+    user_id: str
+    text: str
+    model_id: Optional[str] = None
+    limit: int = 5
+
+
+class MemorySearchResult(BaseModel):
+    id: str
+    user_id: str
+    text: str
+    model_id: Optional[str] = None
+    distance: float
