@@ -10,9 +10,6 @@ RUN uv pip install --no-cache --system -r pyproject.toml
 
 COPY . .
 
-ENV PYTHONPATH=/app
-RUN uv run python -m app.utils.build_utils
-
 EXPOSE 8080
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
