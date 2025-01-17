@@ -30,3 +30,14 @@ jobs:
         run: |
           docker build -t us-central1-docker.pkg.dev/doculoom-446020/vault-service/vault-service:latest .
           docker push us-central1-docker.pkg.dev/doculoom-446020/vault-service/vault-service:latest
+
+      #@todo: not a best practice to deploy latest tag
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          gcloud run deploy vault-service \
+            --image "us-central1-docker.pkg.dev/doculoom-446020/vault-service/vault-service:latest" \
+            --region "us-central1" \
+            --platform "managed" \
+            --allow-unauthenticated \
+            --force # Add --force flag here

@@ -2,11 +2,12 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from datetime import datetime
 
-from app.services.firestore_service import FirestoreService
+
 from app.models.todo_model import TodoCreate, TodoUpdate, TodoItem
+from app.services.firestore.todo_service import FirestoreTodoService
 
 router = APIRouter()
-firestore_service = FirestoreService()
+firestore_service = FirestoreTodoService()
 
 
 @router.post("/todos", response_model=TodoItem)
