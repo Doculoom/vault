@@ -5,12 +5,13 @@ from datetime import datetime
 from google.cloud.firestore_v1.vector import Vector
 
 from app.core.config import settings
-from app.services.firestore_service import FirestoreService
+
 from app.services.embeddings_service import EmbeddingsService
 from app.models.memory_model import MemoryCreate, MemoryUpdate, SecondaryMemory, MemorySearchResult, MemorySearchRequest
+from app.services.firestore.memory_service import FirestoreMemoryService
 
 router = APIRouter()
-firestore_service = FirestoreService()
+firestore_service = FirestoreMemoryService()
 embeddings_service = EmbeddingsService()
 
 
