@@ -35,7 +35,7 @@ jobs:
       - name: Deploy to Cloud Run
         id: deploy
         run: |
-          gcloud run deploy her-service \
+          gcloud run deploy vault-service \
             --image "us-central1-docker.pkg.dev/doculoom-446020/vault-service/vault-service:latest" \
             --region "us-central1" \
             --platform "managed" \
