@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -27,16 +27,30 @@ class SecondaryMemory(MemoryBase):
         from_attributes = True
 
 
+class SecondaryMemoryResponse(MemoryBase):
+    id: Optional[str]
+    user_id: Optional[str]
+    text: Optional[str]
+    embedding: Optional[list[float]]
+    model_id: Optional[str]
+    created: Optional[datetime]
+    updated: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
 class MemorySearchRequest(BaseModel):
-    user_id: str
+    user_id: Optional[str] = None
     text: str
     model_id: Optional[str] = None
-    limit: int = 5
+    limit: int = 100
+    fields: Optional[str] = None
 
 
-class MemorySearchResult(BaseModel):
-    id: str
-    user_id: str
-    text: str
+class MemorySearchResponse(BaseModel):
+    id: Optional[str] = None
+    user_id: Optional[str] = None
+    text: Optional[str] = None
     model_id: Optional[str] = None
-    distance: float
+    distance: float = None

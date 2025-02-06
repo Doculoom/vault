@@ -1,5 +1,5 @@
 import uuid
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
 from google.cloud.firestore_v1.vector import Vector
@@ -37,19 +37,34 @@ class FirestoreMemoryService(FirestoreBaseService):
                 return data
         return {}
 
-    def list_memories(self, user_id: str) -> list:
-        query = self.collection.where(filter=FieldFilter("user_id", "==", user_id))
+    def list_memories(self, user_id: str, fields: List[str]) -> List[Dict[str, Any]]:
+        query = self.collection
+
+        if fields:
+            query = self.collection.select(fields)
+
+        if user_id:
+            query = query.where(filter=FieldFilter("user_id", "==", user_id))
+
         docs = query.stream()
         return [doc.to_dict() for doc in docs]
 
     def search_memories(
             self,
-            user_id: str,
+            user_id: Optional[str],
+            fields: List[str],
             query_embedding: List[float],
             distance_measure: DistanceMeasure = DistanceMeasure.COSINE,
-            limit: int = 5
+            limit: int = 5,
     ) -> List[Dict[str, Any]]:
-        query = self.collection.where(filter=FieldFilter("user_id", "==", user_id))
+        query = self.collection
+
+        if fields:
+            query = self.collection.select(fields)
+
+        if user_id:
+            query = query.where(filter=FieldFilter("user_id", "==", user_id))
+
         vector_query = query.find_nearest(
             vector_field="embedding",
             query_vector=Vector(query_embedding),
