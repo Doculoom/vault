@@ -7,7 +7,8 @@ from google.cloud.firestore_v1.vector import Vector
 from app.core.config import settings
 
 from app.services.embeddings_service import EmbeddingsService
-from app.models.memory_model import MemoryCreate, MemoryUpdate, SecondaryMemory, MemorySearchResult, MemorySearchRequest
+from app.models.memory_model import MemoryCreate, MemoryUpdate, SecondaryMemory, \
+    MemorySearchRequest, SecondaryMemoryResponse, MemorySearchResponse
 from app.services.firestore.memory_service import FirestoreMemoryService
 
 router = APIRouter()
@@ -84,12 +85,14 @@ def update_memory(memory_id: str, update_data: MemoryUpdate, user_id: str):
     )
 
 
-@router.get("/memories", response_model=List[SecondaryMemory])
-def list_memories(user_id: str):
-    memories = firestore_service.list_memories(user_id)
+@router.get("/memories", response_model=List[SecondaryMemoryResponse])
+def list_memories(fields: str = None, user_id: str = None):
+    if fields:
+        fields = [field.strip() for field in fields.split(",") if field.strip()]
+    memories = firestore_service.list_memories(user_id, fields)
     results = []
     for mem in memories:
-        results.append(SecondaryMemory(
+        results.append(SecondaryMemoryResponse(
             id=mem.get("id"),
             user_id=mem.get("user_id"),
             text=mem.get("text"),
@@ -118,7 +121,7 @@ def get_memory(memory_id: str, user_id: str):
     )
 
 
-@router.post("/memories/search", response_model=List[MemorySearchResult])
+@router.post("/memories/search", response_model=List[MemorySearchResponse])
 def search_memories(request: MemorySearchRequest):
     user_id = request.user_id
     embedding = embeddings_service.generate_embedding(
@@ -126,10 +129,17 @@ def search_memories(request: MemorySearchRequest):
         model_id=request.model_id or settings.EMBEDDING_MODEL_ID
     )
 
+    fields = []
+    if request.fields:
+        fields = [field.strip() for field in request.fields.split(",") if field.strip()]
+        if "vector_distance" not in fields:
+            fields.append("vector_distance")
+
     search_results = firestore_service.search_memories(
         user_id=user_id,
         query_embedding=embedding,
-        limit=request.limit
+        limit=request.limit,
+        fields=fields,
     )
 
     return search_results
