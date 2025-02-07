@@ -59,11 +59,11 @@ class FirestoreMemoryService(FirestoreBaseService):
     ) -> List[Dict[str, Any]]:
         query = self.collection
 
-        if fields:
-            query = self.collection.select(fields)
-
         if user_id:
             query = query.where(filter=FieldFilter("user_id", "==", user_id))
+
+        if fields:
+            query = self.collection.select(fields)
 
         vector_query = query.find_nearest(
             vector_field="embedding",
@@ -78,6 +78,7 @@ class FirestoreMemoryService(FirestoreBaseService):
 
         for doc in docs:
             doc_data = doc.to_dict()
+            print(doc_data)
             doc_data["distance"] = doc.get("vector_distance")
             results.append(doc_data)
 
