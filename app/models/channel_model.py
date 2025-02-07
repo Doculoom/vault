@@ -3,14 +3,16 @@ from typing import Optional
 from datetime import datetime
 
 
-class ChannelCreate(BaseModel):
+class Channel(BaseModel):
     user_id: str
-    channel_type: str
+    user_name: Optional[str] = None
+    channel_type: Optional[str] = "telegram"
     channel_id: str
 
 
 class ChannelItem(BaseModel):
     user_id: str
+    user_name: str
     channel_type: str
     channel_id: str
     created_at: Optional[datetime] = None
