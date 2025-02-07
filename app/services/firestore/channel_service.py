@@ -25,22 +25,28 @@ class FirestoreChannelService(FirestoreBaseService):
             return data
         return None
 
-    def create_or_update_channel(self, user_id: str, channel_type: str, channel_id: str) -> Dict:
-        existing = self.get_channel(user_id, channel_type)
+    def create_or_update_channel(self, user_id: str, user_name: str, channel_type: str, channel_id: str) -> Dict:
         now_iso = datetime.utcnow().isoformat()
+        existing = self.get_channel(user_id, channel_type)
 
         if existing:
-            doc_id = existing["id"]
-            self.collection.document(doc_id).update({
-                "channel_id": channel_id,
+            updated_channel_id = channel_id or existing.get("channel_id")
+            updated_channel_type = channel_type or existing.get("channel_type")
+            updated_user_name = user_name or existing.get("user_name")
+            update_data = {
+                "channel_id": updated_channel_id,
+                "channel_type": updated_channel_type,
+                "user_name": updated_user_name,
                 "updated_at": now_iso
-            })
-            existing["channel_id"] = channel_id
-            existing["updated_at"] = now_iso
+            }
+            doc_id = existing["id"]
+            self.collection.document(doc_id).update(update_data)
+            existing.update(update_data)
             return existing
         else:
             data = {
                 "user_id": user_id,
+                "user_name": user_name,
                 "channel_type": channel_type,
                 "channel_id": channel_id,
                 "created_at": now_iso,
