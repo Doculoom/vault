@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
-from google.cloud.firestore_v1.vector import Vector
 
 from app.core.config import settings
 
@@ -29,7 +28,7 @@ def create_memory(memory_data: MemoryCreate):
 
     doc_data = {
         "text": memory_data.text,
-        "embedding": Vector(memory_data.embedding),
+        "embedding": memory_data.embedding,
         "model_id": memory_data.model_id or settings.EMBEDDING_MODEL_ID,
         "created": datetime.utcnow().isoformat()
     }

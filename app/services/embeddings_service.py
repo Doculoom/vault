@@ -1,5 +1,6 @@
 from typing import Optional
 import google.generativeai as genai
+from google.cloud.firestore_v1.vector import Vector
 import os
 
 
@@ -10,4 +11,4 @@ class EmbeddingsService:
     @staticmethod
     def generate_embedding(text: str, model_id: Optional[str]) -> list[float]:
         result = genai.embed_content(model=model_id, content=text)
-        return result['embedding']
+        return Vector(result['embedding'])
