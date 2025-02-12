@@ -14,8 +14,10 @@ class MemoryCreate(MemoryBase):
     pass
 
 
-class MemoryUpdate(MemoryBase):
-    pass
+class MemoryUpdate(BaseModel):
+    text: str
+    embedding: Optional[list[float]] = None
+    model_id: Optional[str] = None
 
 
 class SecondaryMemory(MemoryBase):
